@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 # Read in the data.
-df = pd.read_csv('eda_manipulate_date_strings_with_python.csv')
+df = pd.read_csv('strikes.csv')
 df.head()
 # Convert the `date` column to datetime.
 df['date'] = pd.to_datetime(df['date'])
