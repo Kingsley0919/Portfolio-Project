@@ -1,0 +1,104 @@
+
+# Import libraries and modules.
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import datetime as dt
+import seaborn as sns
+​
+df_companies = pd.read_csv("Unicorn_Companies.csv")
+
+df_companies.head()
+
+df_companies.info()
+
+df_companies.shape
+
+
+df_companies.isnull().sum()
+
+df_companies.isnull().sum()
+df_companies.describe()
+
+df_companies["Date Joined"] = pd.to_datetime(df_companies["Date Joined"])
+df_companies["Year Joined"] = df_companies["Date Joined"].dt.year
+
+def str_to_num(x):
+    x = x.strip("$B")
+    return int(x)
+df_companies["Valuation"] = df_companies["Valuation"].apply(str_to_num)
+
+df_companies.isnull().sum()
+
+mask = df_companies.isna().any(axis = 1)
+print(mask)
+
+df_missing_rows = df_companies[mask]
+most_null = df_missing_rows.groupby("Country/Region").apply(lambda x: x.isnull().sum())
+print(most_null)
+
+count_total = df_companies.size
+
+count_dropna_rows
+# Drop the rows containing missing values, determine number of remaining values 
+count_dropna_rows = df_companies.dropna(axis=0)
+​
+
+# Drop the columns containing missing values, determine number of remaining values
+count_dropna_columns = df_companies.dropna(axis=1)
+
+
+# Print the percentage of values removed by dropping rows.
+percentage_removed_rows = ((count_total - count_dropna_rows.size ) / count_total) * 100
+​
+# Print the percentage of values removed by dropping columns.
+percentage_removed_columns = ((count_total - count_dropna_columns.size ) / count_total) * 100
+print(percentage_removed_rows)
+print(percentage_removed_columns)
+​
+
+df_companies_backfill = df_companies.fillna(method='backfill')
+​
+# 2. Show the rows that previously had missing values
+#df_missing_row
+print(df_companies_backfill[df_companies_backfill["Country/Region"]=="Singapore"])
+
+mask = df_companies[((df_companies["Industry"] == "Hardware") & (df_companies["City"].isin(["Beijing", "San Francisco", "London"]))
+                   | ((df_companies["Industry"] == "Artificial intelligence") & (df_companies["City"] == "London")))]
+​
+​
+# 2. Apply the mask to the `df_companies` dataframe and assign the results to `df_invest`
+​
+print(mask)
+
+# Group the data by`Country/Region`
+national_valuations = count_dropna_rows.groupby("Country/Region")["Valuation"].sum().reset_index().sort_values("Valuation",ascending = False)
+print(national_valuations)
+​
+# Remove outlying countries
+national_valuations_no_big4 = national_valuations.iloc[4:]
+
+national_valuations_no_big4
+# Create a barplot to compare the top 20 countries with highest company valuations.
+plt.figure(figsize=(10, 6))
+sns.barplot(x="Country/Region",y="Valuation",data=national_valuations_no_big4)
+plt.xticks(rotation=45, fontsize=6)
+plt.xlabel('Country', fontsize=14)
+plt.ylabel('Values', fontsize=14)
+plt.title('Bar Plot Example', fontsize=16)
+​
+plt.show()
+
+# Plot the sum of valuations per country.
+import plotly.express as px
+fig = px.scatter_geo(national_valuations_no_big4,
+                     locations='Country/Region',
+                     size='Valuation',
+                     color='Country/Region', 
+                     hover_name='Country/Region',
+                     hover_data=['Valuation'],
+                     projection='natural earth',
+                     title='Total Valuations of Non-Big-Four Countries')
+​
+# Show the plot
+fig.show()
