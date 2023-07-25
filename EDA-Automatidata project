@@ -240,7 +240,14 @@ plt.xticks([])
 plt.xlabel('Drop-off locations')
 plt.title('Histogram of rides by drop-off location', fontsize=16);
 
+taxi_data.groupby('payment_type')['total_amount'].mean()
 
+#hypothesis test, A/B test
+#significance level
+
+credit_card = taxi_data[taxi_data['payment_type'] == 1]['total_amount']
+cash = taxi_data[taxi_data['payment_type'] == 2]['total_amount']
+stats.ttest_ind(a=credit_card, b=cash, equal_var=False)
 df['trip_duration'] = (df['tpep_dropoff_datetime']-df['tpep_pickup_datetime'])
 df.head(10)
 df.head(10)
