@@ -1,18 +1,24 @@
 Automatidata project
 Course 5 - Regression Analysis: Simplify complex data relationships
 
-The data consulting firm Automatidata has recently hired you as the newest member of their data analytics team. Their newest client, the NYC Taxi and Limousine Commission (New York City TLC), wants the Automatidata team to build a multiple linear regression model to predict taxi fares using existing data that was collected over the course of a year. The team is getting closer to completing the project, having completed an initial plan of action, initial Python coding work, EDA, and A/B testing.
+The data consulting firm Automatidata has recently hired you as the newest member of their data analytics team. Their newest client, the NYC Taxi and 
+Limousine Commission (New York City TLC), wants the Automatidata team to build a multiple linear regression model to predict taxi fares using existing 
+data that was collected over the course of a year. The team is getting closer to completing the project, having completed an initial plan of action, 
+initial Python coding work, EDA, and A/B testing.
 
-The Automatidata team has reviewed the results of the A/B testing. Now it’s time to work on predicting the taxi fare amounts. You’ve impressed your Automatidata colleagues with your hard work and attention to detail. The data team believes that you are ready to build the regression model and update the client New York City TLC about your progress.
-
-A notebook was structured and prepared to help you in this project. Please complete the following questions.
+The Automatidata team has reviewed the results of the A/B testing. Now it’s time to work on predicting the taxi fare amounts. You’ve impressed your
+Automatidata colleagues with your hard work and attention to detail. The data team believes that you are ready to build the regression model and update
+the client New York City TLC about your progress.
 
 Course 5 End-of-course project: Build a multiple linear regression model
-In this activity, you will build a multiple linear regression model. As you've learned, multiple linear regression helps you estimate the linear relationship between one continuous dependent variable and two or more independent variables. For data professionals, this is a useful skill because it allows you to consider more than one variable against the variable you're measuring against. This opens the door for much more thorough and flexible analysis to be completed.
+In this activity, you will build a multiple linear regression model. As you've learned, multiple linear regression helps you estimate the linear 
+relationship between one continuous dependent variable and two or more independent variables. For data professionals, this is a useful skill because 
+it allows you to consider more than one variable against the variable you're measuring against. This opens the door for much more thorough and flexible
+analysis to be completed.
 
-Completing this activity will help you practice planning out and building a multiple linear regression model based on a specific business need. The structure of this activity is designed to emulate the proposals you will likely be assigned in your career as a data professional. Completing this activity will help prepare you for those career moments.
-
-The purpose of this project is to demostrate knowledge of EDA and a multiple linear regression model
+Completing this activity will help you practice planning out and building a multiple linear regression model based on a specific business need. 
+The structure of this activity is designed to emulate the proposals you will likely be assigned in your career as a data professional. 
+Completing this activity will help prepare you for those career moments.
 
 
 #Task 1. Imports and loading
