@@ -1,3 +1,4 @@
+Import Library
 # EDA
 import pandas as pd
 import numpy as np
@@ -35,7 +36,6 @@ Take note
 1.There exits some null value in Age, Cabin, Fare columns 2.This dataset including both numeric and categoric column
 
 train.describe()
-train.describe()
 Take note
 There are abnormal value exist in Fare column
 test.describe()
@@ -59,7 +59,6 @@ test = test.groupby('Pclass').apply(replace_outliers
                                    )
 #Remove null value in "Age" column
 train = train.dropna(subset=['Age','Embarked'])
-test = test.dropna(subset=['Age','Fare'])
 Check for Class Inbalance
 #To inspect the percentage of Survived
 print(train['Survived'].value_counts(normalize=True))
@@ -176,13 +175,14 @@ df1 = test.drop(columns=['Name', 'Ticket', 'Fare', 'Cabin', 'Age'])
 ​
 # Encode "Sex" column using pandas get_dummies
 sex_encoded = pd.get_dummies(df['Sex'], drop_first=True, prefix='Sex')
+sex_encoded1 = pd.get_dummies(df1['Sex'], drop_first=True, prefix='Sex')
 ​
 # Encode "Embarked" column using pandas get_dummies
 embarked_encoded = pd.get_dummies(df['Embarked'], drop_first=True, prefix='Embarked')
-​
+embarked_encoded1 = pd.get_dummies(df1['Embarked'], drop_first=True, prefix='Embarked')
 # Concatenate the encoded DataFrames with the original DataFrame
 df_encoded = pd.concat([df, sex_encoded, embarked_encoded], axis=1)
-df1_encoded = pd.concat([df1, sex_encoded, embarked_encoded], axis=1)  # Apply the same encoding to df1
+df1_encoded = pd.concat([df1, sex_encoded1, embarked_encoded1], axis=1)  # Apply the same encoding to df1
 ​
 # Drop the original "Sex" and "Embarked" columns
 df_encoded.drop(['Sex', 'Embarked'], axis=1, inplace=True)
@@ -191,12 +191,11 @@ df1_encoded.drop(['Sex', 'Embarked'], axis=1, inplace=True)  # Drop the same col
 print(df_encoded)
 print(df1_encoded)  
 ​
-df1
 #Model Construct
 # Separate features and target variable
 X = df_encoded.drop(['PassengerId', 'Survived'], axis=1)
 y = df_encoded['Survived']
-X_test = df1_encoded
+X_test = df1_encoded.drop('PassengerId',axis=1)
 # Split the data into training and validation sets
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 ​
@@ -286,10 +285,8 @@ y_pred_logreg = best_logreg_model.predict(X_val)
 class_report_logreg = classification_report(y_val, y_pred_logreg)
 print("Logistic Regression Classification Report:")
 print(class_report_logreg)
+X_test.describe()
 Model Prediction
-from sklearn.linear_model import LogisticRegression
-import pandas as pd
-​
 # Train the Logistic Regression model on the full training data
 logreg_model = LogisticRegression(C=0.1, penalty='l2', solver='lbfgs')  # Use the best parameters found
 logreg_model.fit(X_train, y_train)
@@ -307,5 +304,4 @@ results_df = pd.DataFrame({
 results_df.to_csv('survival_predictions.csv', index=False)
 ​
 # Display the first few rows of the results DataFrame
-print(results_df.head())
-​
+print(results_df.shape)
