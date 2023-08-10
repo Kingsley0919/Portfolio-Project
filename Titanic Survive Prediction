@@ -1,0 +1,311 @@
+# EDA
+import pandas as pd
+import numpy as np
+​
+#Visialliz
+import matplotlib.pyplot as plt
+import seaborn as sns
+​
+#hypothesis testing
+import statsmodels.api as sm
+from scipy.stats import chi2_contingency
+​
+#Construct Model
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LogisticRegression
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+​
+#Model evaluation
+from sklearn.metrics import classification_report,roc_auc_score, roc_curve
+Loading Data
+train = pd.read_csv(r"C:\Users\User\Desktop\codecademy\pp-titanic\train.csv")
+test = pd.read_csv(r"C:\Users\User\Desktop\codecademy\pp-titanic\test.csv")
+train.head(10)
+test.head()
+About The Data
+train.info()
+Take note
+1.There exits some null value in Age, Cabin, Embarked columns 2.This dataset including both numeric and categoric column
+
+test.info()
+Take note
+1.There exits some null value in Age, Cabin, Fare columns 2.This dataset including both numeric and categoric column
+
+train.describe()
+train.describe()
+Take note
+There are abnormal value exist in Fare column
+test.describe()
+Take note
+There are abnormal value exist in Fare column
+DATA VISUALIZATION AND CLEANING
+Replace outlier in 'Fare' column and drop Null value in 'Age' and 'Embarked' column
+#Detect if there is any outlier if so remove it from dataset
+#There exits outlier in 'Fare'
+def replace_outliers(group):
+    Q1 = group['Fare'].quantile(0.25)
+    Q3 = group['Fare'].quantile(0.75)
+    IQR = Q3 - Q1
+    threshold = Q3 + 1.5 * IQR
+    group['Fare'] = group['Fare'].apply(lambda x: threshold if x > threshold else x)
+    return group
+​
+# Apply the replace_outliers function to each Pclass group
+train = train.groupby('Pclass').apply(replace_outliers)
+test = test.groupby('Pclass').apply(replace_outliers
+                                   )
+#Remove null value in "Age" column
+train = train.dropna(subset=['Age','Embarked'])
+test = test.dropna(subset=['Age','Fare'])
+Check for Class Inbalance
+#To inspect the percentage of Survived
+print(train['Survived'].value_counts(normalize=True))
+#No resample is needed
+​
+#Check if there is any duplicate value
+train.duplicated().value_counts()
+test.duplicated().value_counts()
+#Inspect the relationship between each variable
+# Create a box plot using Seaborn
+plt.figure(figsize=(8, 6))
+sns.boxplot(x='Pclass', y='Fare', data=train, palette='Set1')
+plt.xlabel('Pclass')
+plt.ylabel('Fare')
+plt.title('Relationship between Pclass and Fare')
+plt.show()
+There is a Multicollinearity relationship between "Pclass" and "Fare", hence we only pick one as feature
+Inspect the relationship between Embarked feature to target label
+# Calculate the total number of survivors for each 'Embarked' category
+survived_counts = train.groupby('Embarked')['Survived'].sum()
+​
+# Calculate the total number of passengers for each 'Embarked' category
+total_passengers = train['Embarked'].value_counts()
+​
+# Calculate the percentage of survival for each 'Embarked' category
+survival_percentage = (survived_counts / total_passengers) * 100
+​
+# Create a new DataFrame with 'Survive' and 'Percentage' columns
+result_df = pd.DataFrame({
+    'Survive': survived_counts,
+    'Percentage': survival_percentage
+})
+plt.figure(figsize=(8, 6))
+sns.countplot(x='Embarked', data=train, palette='Set1',hue = 'Survived')
+plt.xlabel('Embarked')
+plt.ylabel('Count')
+plt.title('Count of Passengers by Embarked Port')
+plt.show()
+​
+# Print the result
+print(result_df)
+​
+#Embarked Port is important feature, hence we will include it
+# Set the style of the plot
+sns.set(style="whitegrid")
+​
+# Create the bar plot
+plt.figure(figsize=(10, 6))
+ax = sns.countplot(x='SibSp', hue='Survived', data=train, palette="Set2")
+​
+# Add labels and title
+plt.title('Survival Count by Number of Siblings', fontsize=16)
+plt.xlabel('Number of Siblings', fontsize=14)
+plt.ylabel('Count', fontsize=14)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+​
+# Add a legend
+plt.legend(title="Survived", labels=["No", "Yes"])
+​
+# Display the plot
+plt.show()
+Passengers with 0 Siblings:
+Passengers who did not bring any siblings (SibSp = 0) had a mixed chance of survival. The majority of them did not survive, but some did.
+
+Passengers with 1 Sibling:
+Passengers who brought one sibling (SibSp = 1) had a relatively higher chance of survival compared to passengers who had no siblings (SibSp = 0) or more than one sibling. This suggests that having a single sibling might have contributed to a better chance of survival.
+
+Passengers with 2 or 3 Siblings:
+Passengers who brought two or three siblings (SibSp = 2, 3) had a lower chance of survival. This might indicate challenges in evacuating larger groups or coordinating the safety of multiple family members during the evacuation process.
+
+Passengers with 4 or 5 Siblings:
+Passengers who brought four or five siblings (SibSp = 4, 5) had a significantly higher chance of death compared to other groups. This could be due to difficulties in evacuating larger families or finding available lifeboats for everyone.
+
+plt.figure(figsize=(10, 6))
+sns.kdeplot(train[train['Survived'] == 0]['Age'], label='Not Survived', shade=True)
+sns.kdeplot(train[train['Survived'] == 1]['Age'], label='Survived', shade=True)
+plt.title('Age Distribution by Survival')
+plt.xlabel('Age')
+plt.ylabel('Density')
+plt.legend()
+plt.show()
+​
+Age and Survival Relationship:
+There appears to be an association between age and survival on the Titanic. Younger passengers (0 to 15 years old) had a higher chance of survival, and passengers aged 15 to 80 had a lower chance of survival.
+
+Positive Relationship for Children:
+There seems to be a positive relationship between age and survival for children (aged 0 to 15). Children had a higher chance of surviving, possibly because they were given priority during evacuation or had better assistance from adults.
+
+Negative Relationship for Adults:
+There appears to be a negative relationship between age and survival for adults (aged 15 to 80). This could be due to various factors, such as older passengers potentially facing mobility issues or being less likely to get to lifeboats in time.
+
+Hypothesis Testing
+# Features to test
+categorical_features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Embarked']
+target = 'Survived'
+​
+# Perform Chi-Square Test
+for feature in categorical_features:
+    contingency_table = pd.crosstab(df[feature], df[target])
+    chi2, p, dof, expected = chi2_contingency(contingency_table)
+    
+    print(f"Feature: {feature}")
+    print(f"Chi-Square Value: {chi2}")
+    print(f"P-value: {p}")
+    print("Contingency Table:")
+    print(contingency_table)
+    print("-" * 30)
+From above hypothesis testing we will exclude 'Age' column
+Data Encoding
+# Drop irrelevant columns
+df = train.drop(columns=['Name', 'Ticket', 'Fare', 'Cabin', 'Age'])
+df1 = test.drop(columns=['Name', 'Ticket', 'Fare', 'Cabin', 'Age'])
+​
+# Encode "Sex" column using pandas get_dummies
+sex_encoded = pd.get_dummies(df['Sex'], drop_first=True, prefix='Sex')
+​
+# Encode "Embarked" column using pandas get_dummies
+embarked_encoded = pd.get_dummies(df['Embarked'], drop_first=True, prefix='Embarked')
+​
+# Concatenate the encoded DataFrames with the original DataFrame
+df_encoded = pd.concat([df, sex_encoded, embarked_encoded], axis=1)
+df1_encoded = pd.concat([df1, sex_encoded, embarked_encoded], axis=1)  # Apply the same encoding to df1
+​
+# Drop the original "Sex" and "Embarked" columns
+df_encoded.drop(['Sex', 'Embarked'], axis=1, inplace=True)
+df1_encoded.drop(['Sex', 'Embarked'], axis=1, inplace=True)  # Drop the same columns in df1
+​
+print(df_encoded)
+print(df1_encoded)  
+​
+df1
+#Model Construct
+# Separate features and target variable
+X = df_encoded.drop(['PassengerId', 'Survived'], axis=1)
+y = df_encoded['Survived']
+X_test = df1_encoded
+# Split the data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+​
+# Print the shapes of the resulting datasets
+print("X_train shape:", X_train.shape)
+print("y_train shape:", y_train.shape)
+print("X_val shape:", X_val.shape)
+print("y_val shape:", y_val.shape)
+# Define your training and validation sets (X_train, X_val, y_train, y_val)
+​
+# Neural Network Model
+def create_model(hidden_units=(128, 64)):
+    model = Sequential()
+    model.add(Dense(hidden_units[0], activation='relu', input_dim=X_train.shape[1]))
+    if len(hidden_units) > 1:
+        model.add(Dense(hidden_units[1], activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+​
+# Hyperparameter Tuning
+param_grid = {
+    'batch_size': [16, 32],
+    'epochs': [10, 20],
+    'hidden_units': [(64,), (128, 64)]
+}
+​
+best_score = 0
+best_params = {}
+​
+for batch_size in param_grid['batch_size']:
+    for epochs in param_grid['epochs']:
+        for hidden_units in param_grid['hidden_units']:
+            model = create_model(hidden_units)
+            model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0)
+            score = model.evaluate(X_val, y_val, verbose=0)[1]
+            if score > best_score:
+                best_score = score
+                best_params = {'batch_size': batch_size, 'epochs': epochs, 'hidden_units': hidden_units}
+​
+print("Best score: %f" % best_score)
+print("Best params:", best_params)
+​
+# Get the best model from the best_params
+best_model = create_model(best_params['hidden_units'])
+​
+# Train the best model on the full training data
+best_model.fit(X_train, y_train, batch_size=best_params['batch_size'], epochs=best_params['epochs'], verbose=0)
+​
+# Predict on the validation data
+y_pred = best_model.predict(X_val)
+y_pred_classes = [1 if pred > 0.5 else 0 for pred in y_pred]
+​
+# Generate the classification report
+class_report = classification_report(y_val, y_pred_classes)
+print(class_report)
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegression
+​
+# Define the parameter grid for GridSearchCV
+param_grid_logreg = {
+    'penalty': ['l2'],  # Use only 'l2' penalty for lbfgs solver
+    'C': [0.001, 0.01, 0.1, 1, 10, 100]
+}
+​
+# Create a Logistic Regression model
+logreg_model = LogisticRegression(solver='lbfgs')  # Specify the solver
+​
+# Create GridSearchCV instance
+grid_search = GridSearchCV(logreg_model, param_grid=param_grid_logreg, cv=3, verbose=1)
+​
+# Fit the model with GridSearchCV
+grid_search.fit(X_train, y_train)
+​
+# Get the best parameters and best score
+best_params_logreg = grid_search.best_params_
+best_score_logreg = grid_search.best_score_
+​
+print("Best Parameters for Logistic Regression:", best_params_logreg)
+print("Best Score for Logistic Regression:", best_score_logreg)
+​
+# Use the best model for prediction
+best_logreg_model = grid_search.best_estimator_
+y_pred_logreg = best_logreg_model.predict(X_val)
+​
+# Generate the classification report for Logistic Regression
+class_report_logreg = classification_report(y_val, y_pred_logreg)
+print("Logistic Regression Classification Report:")
+print(class_report_logreg)
+Model Prediction
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+​
+# Train the Logistic Regression model on the full training data
+logreg_model = LogisticRegression(C=0.1, penalty='l2', solver='lbfgs')  # Use the best parameters found
+logreg_model.fit(X_train, y_train)
+​
+# Predict on the test data
+y_pred_test = logreg_model.predict(X_test)
+​
+# Create a DataFrame with passenger IDs and survival predictions
+results_df = pd.DataFrame({
+    'PassengerId': df1['PassengerId'],  # Use the PassengerId column from your test dataset
+    'Survived': y_pred_test
+})
+​
+# Save the results to a CSV file
+results_df.to_csv('survival_predictions.csv', index=False)
+​
+# Display the first few rows of the results DataFrame
+print(results_df.head())
+​
