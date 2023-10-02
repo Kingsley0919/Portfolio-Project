@@ -384,3 +384,6 @@ predictions = predict(parameters, X)
 print ('Accuracy: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
 
 
+[Link to Neural Network Model File](https://github.com/Kingsley0919)
+
+
