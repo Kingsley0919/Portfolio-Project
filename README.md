@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="your_profile_image_url" alt="Kingsley Soo" width="150" height="150">
+  <img src="https://github.com/Kingsley0919" alt="Kingsley Soo" width="150" height="150">
 </p>
 
 # Data Science Portfolio 📊
