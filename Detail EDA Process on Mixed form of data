@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 22 22:20:28 2024
-
-@author: kingsley
-"""
 # =============================================================================
 # Inspect the information about the dataset, ensure the data type is correct,
 # check for the missing value, and making sure the dataset is read properly
@@ -17,6 +11,16 @@ import seaborn as sns
 import math
 from scipy import stats
 
+
+path = r'C:\Users\User\Desktop\Master Degree\Semester 2\MECG11503 PROGRAMMING FOR DATA ANALYTICS\Export\outliers_percentages.csv'
+outliers_percentages = pd.DataFrame(outliers_percentages)
+outliers_percentages.to_excel(path,index=False)
+
+
+#Adjust the number of column to output in console, and the column width
+pd.options.display.max_columns = 4
+pd.options.display.width = 100
+
 #Read the data set
 df = pd.read_csv(r'C:\Users\User\Desktop\world food production.csv')
 
@@ -26,7 +30,6 @@ print(df.head())
 
 print("\nInformation about the dataset:")
 print(df.info())
-
 
 # Inspect the shape of the data (number of rows and columns)
 print("\nShape of the dataset (rows, columns):")
@@ -51,11 +54,12 @@ print(unique_count)
 # =============================================================================
 
 # Display the basic statistic for each column
-print(df.describe())
+df_describe = df.describe()
+print("Statistic information for each column:")
+print(df_describe)
 
 # List of columns with 'float64' and 'int64' data types
 numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-
 
 # Group the DataFrame by 'Entity' and calculate statistics for each group of entity in each column
 entity_statistics = {}
@@ -70,14 +74,13 @@ for entity, group in df.groupby('Entity'):
             "Standard Deviation": np.std(group[column])
         }
 
-# Display the statistical summary for each entity for each numeric columns
+# Display the statistical summary for each extity for each numeric column
 for entity, stat in entity_statistics.items():
     print(f"\nStatistics for {entity}:")
-    for column, stat_values in stats.items():
+    for column, stat_values in stat.items():
         print(f"Column: {column}")
         for stat_name, stat_value in stat_values.items():
             print(f"{stat_name}: {stat_value}")
-            
             
             
 ## Inspect the distrirbution of the dataset, for each column
@@ -86,29 +89,21 @@ entity_count = df['Entity'].value_counts().sort_values(ascending=True)
 print(entity_count)
 
 
-# Initialize dictionaries to store statistics
-mean_dict = {}
-median_dict = {}
-std_dict = {}
-skewness_dict = {}
-
+# Initialize a dictionary to store statistics
+statistics_dict = {}
 
 # Loop through numeric columns and create histograms with KDE plots
 for i, column in enumerate(numeric_columns):
     
-    # Calculate statistics for the whole column
-    mean_dict[column] = df[column].mean()
-    median_dict[column] = df[column].median()
-    std_dict[column] = df[column].std()
-    skewness_dict[column] = df[column].skew()
-    
-    # Print statistics
-for column in numeric_columns:
-    print(f"Statistics for {column}:")
-    print(f"Mean: {mean_dict[column]}")
-    print(f"Median: {median_dict[column]}")
-    print(f"Standard Deviation: {std_dict[column]}")
-    print(f"Skewness: {skewness_dict[column]}")
+    # Calculate statistics for the whole column and store them in the combined dictionary
+    statistics_dict[column] = {
+        'Mean': df[column].mean(),
+        'Median': df[column].median(),
+        'Standard Deviation': df[column].std(),
+        'Skewness': df[column].skew()
+    }
+
+print(statistics_dict)
     
 
 ## Inpect the maximum and meanimum production of entity for each food production in each year
@@ -131,8 +126,8 @@ for product in food_products:
 
 
 # Convert results to a DataFrame for better visualization
-results_df = pd.DataFrame(results)
-print(results_df)
+food_min_max_entity = pd.DataFrame(results)
+print(food_min_max_entity)
 
 
 
@@ -252,7 +247,6 @@ plt.tight_layout()
 plt.show()
 
 
-
 ## Inspect their relationship, to see which product production will produce according t other product
 # Calculate the correlation matrix between numeric columns
 correlation_matrix = yearly_sum.corr()
@@ -274,7 +268,6 @@ plt.title("Correlation Heatmap of Numeric Columns by Year")
 
 # Show the plot
 plt.show()
-
 
 
 
