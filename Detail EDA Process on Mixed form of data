@@ -12,17 +12,15 @@ import math
 from scipy import stats
 
 
-path = r'C:\Users\User\Desktop\Master Degree\Semester 2\MECG11503 PROGRAMMING FOR DATA ANALYTICS\Export\outliers_percentages.csv'
-outliers_percentages = pd.DataFrame(outliers_percentages)
-outliers_percentages.to_excel(path,index=False)
-
-
 #Adjust the number of column to output in console, and the column width
 pd.options.display.max_columns = 4
 pd.options.display.width = 100
 
 #Read the data set
 df = pd.read_csv(r'C:\Users\User\Desktop\world food production.csv')
+
+#Change the first 'Entity' column data type into string
+df['Entity'] = df['Entity'].astype(str)
 
 # Display the first five rows of the dataset
 print("First five rows of the dataset:")
@@ -89,21 +87,27 @@ entity_count = df['Entity'].value_counts().sort_values(ascending=True)
 print(entity_count)
 
 
-# Initialize a dictionary to store statistics
-statistics_dict = {}
 
-# Loop through numeric columns and create histograms with KDE plots
-for i, column in enumerate(numeric_columns):
-    
-    # Calculate statistics for the whole column and store them in the combined dictionary
-    statistics_dict[column] = {
+# Initialize an empty DataFrame to store statistics
+statistics_df = pd.DataFrame(columns=['Column', 'Minimum', 'Maximum', 'Mean', 'Median', 'Standard Deviation', 'Skewness', 'Count'])
+
+# Loop through numeric columns and calculate statistics
+for column in numeric_columns:
+    column_stats = {
+        'Column': column,
+        'Minimum': np.min(df[column]),
+        'Maximum': np.max(df[column]),
         'Mean': df[column].mean(),
         'Median': df[column].median(),
         'Standard Deviation': df[column].std(),
-        'Skewness': df[column].skew()
+        'Skewness': df[column].skew(),
+        'Count': df[column].count()  
     }
+    # Append the statistics for the current column to the DataFrame
+    statistics_df = statistics_df.append(column_stats, ignore_index=True)
 
-print(statistics_dict)
+print(statistics_df)
+
     
 
 ## Inpect the maximum and meanimum production of entity for each food production in each year
@@ -153,7 +157,7 @@ def create_plots(columns_subset, set_number, plot_type):
         if plot_type == 'boxplot':
             sns.boxplot(data=df, y=column, ax=ax)
         elif plot_type == 'histplot':
-            sns.histplot(df[column], bins=30, kde=True, ax=ax)
+            sns.histplot(df[column], bins=100, kde=True, ax=ax)
 
         # Set labels and title
         ax.set_ylabel('Value' if plot_type == 'boxplot' else 'Count')
