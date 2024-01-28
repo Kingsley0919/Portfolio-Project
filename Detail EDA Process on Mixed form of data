@@ -1,6 +1,9 @@
 # =============================================================================
-# Inspect the information about the dataset, ensure the data type is correct,
-# check for the missing value, and making sure the dataset is read properly
+# This section includes importing the necessary libraries and configuring the 
+# console's display options for improved readability. The dataset is loaded from 
+# a CSV file, and initial inspections such as checking data types, viewing the 
+# first few rows, and examining basic dataset information such as shape and unique 
+# values in the 'Entity' column are carried out.
 # =============================================================================
 
 #Import the necessary library
@@ -10,7 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 from scipy import stats
-
 
 #Adjust the number of column to output in console, and the column width
 pd.options.display.max_columns = 4
@@ -22,10 +24,11 @@ df = pd.read_csv(r'C:\Users\User\Desktop\world food production.csv')
 #Change the first 'Entity' column data type into string
 df['Entity'] = df['Entity'].astype(str)
 
-# Display the first five rows of the dataset
+#Display the first five rows of the dataset
 print("First five rows of the dataset:")
 print(df.head())
 
+#Check the data type and missing value
 print("\nInformation about the dataset:")
 print(df.info())
 
@@ -35,20 +38,21 @@ print(df.shape)
 
 # Print unique values of the first column ('Entity')
 unique_entities = df['Entity'].unique()
+print("Unique values of the 'Entity' column:")
+print(unique_entities)
 
 # Print the number of unique value of the first column('Entity')
 unique_count = df['Entity'].nunique()
-
-print("Unique values of the 'Entity' column:")
-print(unique_entities)
 print("Number of Unique values of the 'Entity' column:")
 print(unique_count)
 
 
 # =============================================================================
-# Second Step in a Data Science Pipeline, summarize the statistic for each column
-# for each group, and identify the possible distribution of each column
-# Check for the outlier.
+# This segment focuses on summarising the dataset with basic statistics for each 
+# column and conducting a more in-depth grouped analysis. It calculates statistics 
+# such as minimum, maximum, mean, median, and standard deviation for each numeric 
+# column, both overall and by 'Entity'. The code also looks at the distribution of 
+# the 'Entity' column by counting its values.
 # =============================================================================
 
 # Display the basic statistic for each column
@@ -79,7 +83,7 @@ for entity, stat in entity_statistics.items():
         print(f"Column: {column}")
         for stat_name, stat_value in stat_values.items():
             print(f"{stat_name}: {stat_value}")
-            
+           
             
 ## Inspect the distrirbution of the dataset, for each column
 # Print the value counts of 'Entity' column in descending order
@@ -87,6 +91,12 @@ entity_count = df['Entity'].value_counts().sort_values(ascending=True)
 print(entity_count)
 
 
+# =============================================================================
+# This section computes extended statistics for each numerical column, including 
+# skewness, and displays them in a DataFrame. It also identifies the maximum and 
+# minimum producers for each food product by year, and presents this data in a 
+# structured format.
+# =============================================================================
 
 # Initialize an empty DataFrame to store statistics
 statistics_df = pd.DataFrame(columns=['Column', 'Minimum', 'Maximum', 'Mean', 'Median', 'Standard Deviation', 'Skewness', 'Count'])
@@ -107,8 +117,6 @@ for column in numeric_columns:
     statistics_df = statistics_df.append(column_stats, ignore_index=True)
 
 print(statistics_df)
-
-    
 
 ## Inpect the maximum and meanimum production of entity for each food production in each year
 # Selecting all columns from the third to the last for food products 
@@ -134,11 +142,14 @@ food_min_max_entity = pd.DataFrame(results)
 print(food_min_max_entity)
 
 
+# =============================================================================
+# The script here is intended to show data distributions and potential outliers. 
+# Functions generate boxplots and histograms for subsets of columns, allowing 
+# for visual inspection of distributions and identifying outliers. 
+# The function detects outliers using the z-score method and prints the 
+# percentage of outliers in each numeric column.
+# =============================================================================
 
-# =============================================================================
-# Function to create histogram and kde plots for a subset of columns to inspect the distribution of each 
-# column and to create boxplot to check for outlier in each column.
-# =============================================================================
 def create_plots(columns_subset, set_number, plot_type):
     num_columns = 2  # Number of columns in each row
     num_rows = math.ceil(len(columns_subset) / num_columns)  # Number of rows
@@ -183,8 +194,6 @@ create_plots(group1, 1, 'histplot')
 create_plots(group2, 2, 'histplot')
 create_plots(group3, 3, 'histplot') 
 
-
-
 # Define a function to detect outliers and print the percentage of outliers
 def detect_outliers_with_zscore(dataframe, columns):
     outlier_percentages = {}
@@ -194,7 +203,7 @@ def detect_outliers_with_zscore(dataframe, columns):
         z_scores = stats.zscore(dataframe[column])
         
         # Identify outliers
-        outliers = np.where(np.abs(z_scores) > 3)  # typically, a z-score above 3 is considered an outlier
+        outliers = np.where(np.abs(z_scores) > 3)  # z-score above 3 is considered an outlier
         
         # Calculate the percentage of outliers
         total_values = len(dataframe[column])
@@ -206,22 +215,18 @@ def detect_outliers_with_zscore(dataframe, columns):
         # Print the percentage of outliers
         print(f"Percentage of outliers in {column}: {percentage:.2f}%")
         
-        # You can also choose to print or store the actual outlier values
-        # print(f"Outliers in {column}:", dataframe.iloc[outliers][column].values)
-        
     return outlier_percentages
 
 # Call the function
 outliers_percentages = detect_outliers_with_zscore(df, numeric_columns)
 
 
-
-
-
 # =============================================================================
-# Analyze on Year Time Series data, to see the production of each categpry of product
-# in each year
+# This section of the script focuses on time series analysis. To analyse production 
+# trends over time, data is grouped by year and numeric columns summed. Regression 
+# plots are created for each product category to illustrate trends over time.
 # =============================================================================
+
 # Select numeric columns (excluding 'Year')
 numeric_columns_year = df.select_dtypes(include=['float64', 'int64']).columns.drop('Year')
 
@@ -251,7 +256,12 @@ plt.tight_layout()
 plt.show()
 
 
-## Inspect their relationship, to see which product production will produce according t other product
+# =============================================================================
+# The final section of the script examines the relationships between various product 
+# productions. It generates a correlation matrix for numeric columns and visualises 
+# these correlations using a heatmap, revealing how different product productions are related.
+# =============================================================================
+
 # Calculate the correlation matrix between numeric columns
 correlation_matrix = yearly_sum.corr()
 
